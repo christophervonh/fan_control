@@ -11,84 +11,92 @@
   <body>
     <main>
       <h1>Fan Controller 0.1</h1>
-      <button
-        type="button"
-        class="btn btn-success"
-        id="fanControlStatus"
-        onclick="toggleFanControlStatus()"
-      >
-        On
-      </button>
-      <div>
-        <label class="form-label" for="fanRange1">Fans Strang 1</label>
-        <div class="range">
-          <input
-            type="range"
-            class="form-range"
-            id="fanRange1"
-            name="fanRange1"
-            min="0"
-            max="500"
-            oninput="amountFan1.value=fanRange1.value"
-          />
-          <output
-            name="amountFan1"
-            class="range-slider__value"
-            id="amountFan1"
-            for="rangeInput"
-            >0</output
-          >
-        </div>
-      </div>
-      <div>
-        <label class="form-label" for="fanRange2">Fans Strang 2</label>
-        <div class="range">
-          <input
-            type="range"
-            class="form-range"
-            id="fanRange2"
-            name="fanRange2"
-            min="0"
-            max="500"
-            oninput="amountFan2.value=fanRange2.value"
-          />
-          <output
-            name="amountFan2"
-            class="range-slider__value"
-            id="amountFan2"
-            for="rangeInput"
-            >0</output
-          >
-        </div>
-        <div class="card">
-          <p>Fan Color Picker</p>
-          <div>
-            <input type="color" id="head" name="head" value="#e66465" />
-            <label for="head">Fan 1</label>
-          </div>
-          <div>
-            <input type="color" id="body" name="body" value="#f6b73c" />
-            <label for="body">Fan 2</label>
-          </div>
-          <div>
-            <input type="color" id="body" name="body" value="#f6b73c" />
-            <label for="body">Fan 3</label>
+      <div class="card">
+        <span>Fan Controller On/Off</span>
+        <button
+          type="button"
+          class="btn btn-success"
+          id="fanControlStatus"
+          onclick="toggleFanControlStatus()"
+        >
+          On
+        </button>
+        <div>
+          <label class="form-label" for="fanRange1">Fans Strang 1</label>
+          <div class="range">
+            <input
+              type="range"
+              class="form-range"
+              id="fanRange1"
+              name="fanRange1"
+              min="0"
+              max="500"
+              oninput="amountFan1.value=fanRange1.value"
+              onchange="updateFanRPM(this)"
+            />
+            <output
+              name="amountFan1"
+              class="range-slider__value"
+              id="amountFan1"
+              for="rangeInput"
+              >0</output
+            >
           </div>
         </div>
-        <div id="html5DIV">
-          <br />Note: you can use the color picker eyedropper to click on any
-          color on your screen.
+        <div>
+          <label class="form-label" for="fanRange2">Fans Strang 2</label>
+          <div class="range">
+            <input
+              type="range"
+              class="form-range"
+              id="fanRange2"
+              name="fanRange2"
+              min="0"
+              max="500"
+              oninput="amountFan2.value=fanRange2.value"
+              onchange="updateFanRPM(this)"
+            />
+            <output
+              name="amountFan2"
+              class="range-slider__value"
+              id="amountFan2"
+              for="rangeInput"
+              >0</output
+            >
+          </div>
+        </div>
+
+        <p>Fan Color Picker</p>
+        <span>Fan Controller On/Off</span>
+        <button
+          type="button"
+          class="btn btn-success"
+          id="LEDControlStatus"
+          onclick="toggleLEDControlStatus()"
+        >
+          On
+        </button>
+        <div>
           <input
             type="color"
-            id="html5colorpicker"
-            onchange="clickColor(0, -1, -1, 5)"
-            value="#ff0000"
-            style="width: 85%"
+            id="Strang1"
+            name="head"
+            value="#e66465"
+            class="LED-Control"
           />
+          <label for="Strang1">Fans Strang 1</label>
         </div>
-        <div class="card">
-          <div class="TEST">AAA</div>
+        <div>
+          <input
+            type="color"
+            id="Strang2"
+            name="body"
+            value="#f6b73c"
+            class="LED-Control"
+          />
+          <label for="Strang2">Fans Strang 2</label>
         </div>
+
         <input type="color" value="#ff0000" id="color-picker" />
       </div>
     </main>
