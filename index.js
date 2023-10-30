@@ -1,11 +1,14 @@
 let colorPicker;
+let LEDControlStatus = true;
+let fanControlStatus = true;
 const defaultColor = "#0000ff";
 
 window.addEventListener("load", startup, false);
 
 function startup() {
+  initializeFanSlider();
   fanControlStatus = this.getFanControlStatus();
-  LEDControlStatus = ths.getLEDControlStatus();
+  LEDControlStatus = this.getLEDControlStatus();
   colorPicker = document.querySelector("#color-picker");
   colorPicker.value = defaultColor;
   colorPicker.addEventListener("input", updateFirst, false);
@@ -26,8 +29,6 @@ function updateAll(event) {
     console.log("Test: " + event.target.value);
   });
 }
-
-let fanControlStatus = true;
 
 // get from C++ Code
 function getFanControlStatus() {
@@ -71,13 +72,20 @@ function disableFanControl() {
   return fanControlStatus;
 }
 
-setInterval(getFanRPM, 1000);
+//setInterval(getFanRPM, 1000);
 
 // Get Fan RPM speed from C++ Code in automatic mode
 function getFanRPM() {
-  const strang1RPM = document.querySelector("#fanControlStatus");
-  const strang2RPM = document.querySelector("#fanControlStatus");
+  //let strang1RPM = document.querySelector("#fanControlStatus");
+  //let strang2RPM = document.querySelector("#fanControlStatus");
+  let strang1RPM = 300,
+    strang2RPM = 50;
+  return {
+    strang1RPM: strang1RPM,
+    strang2RPM: strang2RPM,
+  };
 }
+
 // Update Fan RPM via Slider Element
 function updateFanRPM(element) {
   var sliderNumber = element.id.charAt(element.id.length - 1);
@@ -87,7 +95,17 @@ function updateFanRPM(element) {
   //websocket.send(sliderNumber + "s" + sliderValue.toString());
 }
 
-let LEDControlStatus = true;
+// Update Fan RPM via Slider Element
+function initializeFanSlider(event) {
+  strang1RPM = this.getFanRPM().strang1RPM;
+  strang2RPM = this.getFanRPM().strang2RPM;
+  document.querySelector("#fanRange1").value = strang1RPM;
+  document.querySelector("#amountFan1").value = strang1RPM;
+  document.querySelector("#fanRange2").value = strang2RPM;
+  document.querySelector("#amountFan2").value = strang2RPM;
+
+  //websocket.send(sliderNumber + "s" + sliderValue.toString());
+}
 
 // get from C++ Code
 function getLEDControlStatus() {
