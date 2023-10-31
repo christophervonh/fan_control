@@ -40,11 +40,11 @@ class Strang{
   public:
   // Defult Value 0%
     int value_v           = 125;
-    int pid_van_value_cpu = 0;
+    uint8_t pid_van_value_cpu = 0;
     int pid_van_value_gpu = 0;
-    int value_r           = 0;
-    int value_g           = 0;
-    int value_b           = 0;
+    int value_r           = 100;
+    int value_g           = 150;
+    int value_b           = 200;
     
     int brightness        = 0;        // Helligkeit 0-100
     int value_r_b         = 0;        // Value für Rot mit helligkeit
@@ -54,16 +54,18 @@ class Strang{
     float cpu_temp;
     float gpu_temp;
 
-    float soll_temp_cpu = 60.0f;
-    float soll_temp_gpu = 60.0f;
+    float soll_temp_cpu = 40.0f;
+    float soll_temp_gpu = 40.0f;
 
-    int P,I,D;       // Values für PID Regler
+    float pid_P=1.0f;
+    float pid_I=1.0f;
+    float pid_D=1.0f;       // Values für PID Regler
 
     // aktiviert/deaktiviert Strang
     int akitve_van = 1;  // Schaltet Lüfter an bzw aus 
     int state_van  = 1;  // 0 - PID-Controlles ; 1 - User Controll : 2 - PID beide CPU Solllwert ; 3 - PID beide GPU Sollwert 
-    int aktive_led = 0;  // Schaltet Lichter an bzw aus.
-    int state_led  = 0;  // 0 - Show ; 1 - Usere Controll
+    int aktive_led = 1;  // Schaltet Lichter an bzw aus.
+    int state_led  = 1;  // 0 - Show ; 1 - Usere Controll
     int show_nr = 0;     // merkt sich welche Show
 
     uint32_t last_call_show = 0;
@@ -142,18 +144,26 @@ class Strang{
    
   void set_van_state(int);                // Schaltet Lüfter an / aus
   void set_van_status(int);               // PID oder User
-  void set_van_value(int);                // sewt geschwindigkeit 0-255  
+  void set_van_value(int);                // sewt geschwindigkeit 0-255
 
-  void set_led_state(bool);               // schaltet Lichter an / aus
+  int get_van_state(void);                // Schaltet Lüfter an / aus
+  int get_van_status(void);               // PID oder User
+  int get_van_value(void);                // sewt geschwindigkeit 0-255    
+
+  void set_led_aktive(bool);               // schaltet Lichter an / aus
   void set_led_status(bool);              // Sow oder User Controlled
   void set_led_value_red(uint8_t);        // Value red
   void set_led_value_green(uint8_t);      // Value green
   void set_led_value_blue(uint8_t);       // Value blue
+  void set_led_value_rgb(uint8_t,uint8_t,uint8_t);
   void set_show_nr(uint8_t);              // animation nummer
 
+  int get_led_aktive(void);               // schaltet Lichter an / aus
+  int get_led_status(void);              // Sow oder User Controlled
   uint8_t get_led_value_red(void);        // Value red
   uint8_t get_led_value_green(void);      // Value green
   uint8_t get_led_value_blue(void);       // Value blue
+  uint8_t get_show_nr(void);              // animation nummer
 
   void set_soll_temp_cpu(float);          // Setzt Soll Temperatur für PID Regler
   void set_soll_temp_gpu(float);          // Setzt Sell Temperatur für PID Regler

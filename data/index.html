@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Fan Controller</title>
-    <link rel="stylesheet" href="./bootstrap.min.css" />
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="bootstrap.min.css" />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <main>
@@ -32,13 +32,12 @@
               value="1"
               min="0"
               max="500"
-              oninput="amountFan1.value=fanRange1.value"
               onchange="updateFanRPM(this)"
             />
             <output
               name="amountFan1"
               class="range-slider__value"
-              id="amountFan1"
+              id="slider1"
               for="rangeInput"
               >0</output
             >
@@ -55,13 +54,12 @@
               value="1"
               min="0"
               max="500"
-              oninput="amountFan2.value=fanRange2.value"
               onchange="updateFanRPM(this)"
             />
             <output
               name="amountFan2"
               class="range-slider__value"
-              id="amountFan2"
+              id="slider2"
               for="rangeInput"
               >0</output
             >

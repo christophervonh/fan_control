@@ -52,17 +52,17 @@ uint8_t Strang::get_ch_blue(void){
 
 // Setzt p-value vom PID
 int Strang::get_pid_p(void){
-  return P;
+  return pid_P;
 } 
 
 // Setzt i-value vom PID               
 int Strang::get_pid_i(void){
-  return I;
+  return pid_I;
 }
 
 // Setzt d-value vom PID              
 int Strang::get_pid_d(void){
-  return D;
+  return pid_D;
 }
 
  // get Soll Temperatur für PID Regler
@@ -95,10 +95,37 @@ uint8_t Strang::get_led_value_blue(void){
   return value_b;
 }
 
+// schaltet Lichter an / aus
+int Strang::get_led_aktive(void){
+  return aktive_led;
+}               
 
+// Sow oder User Controlled
+int Strang::get_led_status(void){              
+  return state_led;
+}
+// Schaltet Lüfter an / aus
+int Strang::get_van_state(void){
+  return akitve_van;
+}       
+  // PID oder User         
+int Strang::get_van_status(void){
+  return state_van;
+} 
+   // sewt geschwindigkeit 0-255    
+int Strang::get_van_value(void){
+  return value_v;
+}    
+     
 /***************************************************************************/
 /*                         set-Funktions                                   */
 /***************************************************************************/
+
+void Strang::set_led_value_rgb(uint8_t r, uint8_t g, uint8_t b){
+  value_r = r;
+  value_g = g;
+  value_b = b; 
+}
 
 // Schaltet Lüfter an / aus
 void Strang::set_van_state(int state) {
@@ -116,7 +143,7 @@ void Strang::set_van_value(int value) {
 }
 
 // schaltet Lichter an / aus
-void Strang::set_led_state(bool state) {
+void Strang::set_led_aktive(bool state) {
   aktive_led = state;
 }
 
@@ -147,17 +174,17 @@ void Strang::set_led_value_blue(uint8_t value) {
 
 // gibt p-value vom PID
 void Strang::set_pid_p(int p){
-  P = p;
+  pid_P = p;
 }
 
 // gibt i-value vom PID            
 void Strang::set_pid_i(int i){
-  I = i;
+  pid_I = i;
 }
 
 // gibt d-value vom PID              
 void Strang::set_pid_d(int d){
-  D = d;
+  pid_D = d;
 }
 
 // Setzt Soll Temperatur für PID Regler
@@ -175,49 +202,53 @@ void Strang::set_soll_temp_gpu(float soll_temperatur){
 /***************************************************************************/
 void Strang::calc_pid(float temp_now){
 
-  // Empfindlichkeit des PID-Reglers
-float Tn = 1.0f;
-float Tv = 1.0f;
-float Kp = 1.0f;
-  // Variablen für P,I,D
-//float P,I,D;
-  // Zeitkostente 
-float delta_t=0.5f;
+    // Empfindlichkeit des PID-Reglers
+  static float Tn = 5.0f;
+  static float Tv = 2.0f;
+  static float Kp = 1.0f;
+    // Variablen für P,I,D
+  //float P,I,D;
+    // Zeitkostente 
+  static float delta_tt=0.5f;
+  static float En=0.0,en1=0.0,en2=0.0;
+  static float Yn=0.0,yn1=0.0;
+  static float delta_y;
 
-static float En=0.0,en1=0.0,en2=0.0;
-static float Yn=0.0,yn1=0.0;
-float delta_y;
+  static float soll_temp = 40.0f;
 
-float soll_temp;
+  // if(get_id() == STRANG1) soll_temp = soll_temp_cpu;
+  // if(get_id() == STRANG2) soll_temp = soll_temp_gpu;
 
-if(get_id() == STRANG1) soll_temp = soll_temp_cpu;
-if(get_id() == STRANG2) soll_temp = soll_temp_gpu;
+  En =  40.0f - temp_now ;     // T1 = Temperatur_1 = Sollwert hier
+                                      // delat = erlaubte Regelabweichung   
+                                      // T2 = Temperatur_2 = Istwert
+                                      // En = Regelabweichung
+                      
+  // Berechnugn P I D
+  pid_P = En - en1;
+  pid_D = (delta_tt / Tn) * En;
+  pid_I = Tv * (En - 2 * en1 + en2);
 
-En = soll_temp - temp_now ;     // T1 = Temperatur_1 = Sollwert hier
-                                    // delat = erlaubte Regelabweichung   
-                                    // T2 = Temperatur_2 = Istwert
-                                    // En = Regelabweichung
-                    
-// Berechnugn P I D
-P = En - en1;
-D = (delta_t / Tn) * En;
-I = Tv * (En - 2 * en1 + en2);
+  // Berechnung neuer Stellgröße
+  delta_y = Kp * ( pid_P + pid_D + pid_I);
+  Yn = yn1 + delta_y;
 
-// Berechnung neuer Stellgröße
-delta_y = Kp * ( P + D + I);
-Yn = yn1 + delta_y;
+  // Speichert alte Werte
+  en2 = en1;
+  en1 = En;
+  yn1 = Yn;
 
-// Speichert alte Werte
-en2 = en1;
-en1 = En;
-yn1 = Yn;
+  // Begrenzt Yn auf 100
+  if (Yn > 100.0) Yn=99.99;
+  if (Yn <   0.0) Yn=  0.0;
 
-// Begrenzt Yn auf 100
-if (Yn > 100.0) Yn=99.99;
-if (Yn <   0.0) Yn=  0.0;
+  pid_van_value_cpu = map(Yn,0,99,0,255); 
+//if(get_id() == STRANG2)pid_van_value_gpu = map(Yn,0,99,0,255);
 
-if(get_id() == STRANG1)pid_van_value_cpu = map(Yn,0,99,0,255); 
-if(get_id() == STRANG2)pid_van_value_gpu = map(Yn,0,99,0,255);
+
+  // char bufferr[100];
+  // sprintf(bufferr,"P: %f , I: %f D: %f resultiert in gesch: %d",P,I,D,pid_van_value_cpu);
+  // Serial.print(bufferr);
 
          // Gibt Stellgröße zurück und springt ins Hautprogramm zurück
 }
@@ -228,50 +259,67 @@ if(get_id() == STRANG2)pid_van_value_gpu = map(Yn,0,99,0,255);
 
 void Strang::update_values(String cmd){
   
-  int cmd_buffer[10] = {0};
+  // int cmd_buffer[10] = {0};
 
-  //ESP_LOGI("update_values","OLD VALUES \n Strang %d: \n akitve_van = %d \n state_van  = %d \n value_v    = %d \n aktive_led = %d \n state_led  = %d  \n show_nr    = %d \n value_r = %d \n value_g = %d \n value_b = %d. \n",get_id(),cmd_buffer[1],cmd_buffer[2],cmd_buffer[3],cmd_buffer[4],cmd_buffer[5],cmd_buffer[6],cmd_buffer[7],cmd_buffer[8],cmd_buffer[9]);
+  // //ESP_LOGI("update_values","OLD VALUES \n Strang %d: \n akitve_van = %d \n state_van  = %d \n value_v    = %d \n aktive_led = %d \n state_led  = %d  \n show_nr    = %d \n value_r = %d \n value_g = %d \n value_b = %d. \n",get_id(),cmd_buffer[1],cmd_buffer[2],cmd_buffer[3],cmd_buffer[4],cmd_buffer[5],cmd_buffer[6],cmd_buffer[7],cmd_buffer[8],cmd_buffer[9]);
   
-  if(check_cmd(cmd)){
+  // if(check_cmd(cmd)){
 
-    pars_cmd( cmd, cmd_buffer );
+  //   pars_cmd( cmd, cmd_buffer );
 
-    //ESP_LOGI("update_values","NEW VALUES \n Strang %d: \n akitve_van = %d \n state_van  = %d \n value_v    = %d \n aktive_led = %d \n state_led  = %d  \n show_nr    = %d \n value_r = %d \n value_g = %d \n value_b = %d. \n",get_id(),cmd_buffer[1],cmd_buffer[2],cmd_buffer[3],cmd_buffer[4],cmd_buffer[5],cmd_buffer[6],cmd_buffer[7],cmd_buffer[8],cmd_buffer[9]);
+  //   //ESP_LOGI("update_values","NEW VALUES \n Strang %d: \n akitve_van = %d \n state_van  = %d \n value_v    = %d \n aktive_led = %d \n state_led  = %d  \n show_nr    = %d \n value_r = %d \n value_g = %d \n value_b = %d. \n",get_id(),cmd_buffer[1],cmd_buffer[2],cmd_buffer[3],cmd_buffer[4],cmd_buffer[5],cmd_buffer[6],cmd_buffer[7],cmd_buffer[8],cmd_buffer[9]);
 
-    check_values(cmd_buffer);
+  //   check_values(cmd_buffer);
 
-    if( get_id() == cmd_buffer[0] ){   
+  //   if( get_id() == cmd_buffer[0] ){   
 
-      akitve_van = cmd_buffer[1];  
-      state_van  = cmd_buffer[2];    
-      value_v    = cmd_buffer[3];
+  //     akitve_van = cmd_buffer[1];  
+  //     state_van  = cmd_buffer[2];    
+  //     value_v    = cmd_buffer[3];
 
-      aktive_led = cmd_buffer[4]; 
-      state_led  = cmd_buffer[5];  
-      show_nr    = cmd_buffer[6];
+  //     aktive_led = cmd_buffer[4]; 
+  //     state_led  = cmd_buffer[5];  
+  //     show_nr    = cmd_buffer[6];
 
-      value_r = cmd_buffer[7];
-      value_g = cmd_buffer[8];
-      value_b = cmd_buffer[9];      
+  //     value_r = cmd_buffer[7];
+  //     value_g = cmd_buffer[8];
+  //     value_b = cmd_buffer[9];      
 
-      ESP_LOGI("update_values","nach IF VALUES \n Strang %d: \n akitve_van = %d \n state_van  = %d \n value_v    = %d \n aktive_led = %d \n state_led  = %d  \n show_nr    = %d \n value_r = %d \n value_g = %d \n value_b = %d. \n",get_id(), akitve_van, state_van, value_v, aktive_led, state_led, show_nr, value_r, value_g, value_b);
+  //     ESP_LOGI("update_values","nach IF VALUES \n Strang %d: \n akitve_van = %d \n state_van  = %d \n value_v    = %d \n aktive_led = %d \n state_led  = %d  \n show_nr    = %d \n value_r = %d \n value_g = %d \n value_b = %d. \n",get_id(), akitve_van, state_van, value_v, aktive_led, state_led, show_nr, value_r, value_g, value_b);
 
-    }
+  //   }
     
-  }
+  // }
 
 
   run();
 
 }
 
+bool istGueltigerString(String input) {
+  for (size_t i = 0; i < input.length(); i++) {
+    char c = input.charAt(i);
+    if (!isdigit(c) && c != ':') {
+      return false; // Wenn ein Zeichen keine Ziffer und kein ':' ist, ist es ungültig
+    }
+  }
+  return true; // Alle Zeichen sind Ziffern oder ':', also ist es gültig
+}
+
 int Strang::check_cmd(String cmd){
 
   if(cmd == "d" ) return 0;  // Keine neuen daten
+  if(cmd.length() < 5) return 0;
+  if( !istGueltigerString(cmd) ){ 
+    Serial.println("ungueltiger String"); 
+    return 0;
+  }
 
   return 1;                  // neue Daten
 
 }
+
+
 
 //              0123456789
 // String -->  "1:1:1:125:1:0:5:80:120:200"
